@@ -1,0 +1,1 @@
+# aws-full-stack-template
