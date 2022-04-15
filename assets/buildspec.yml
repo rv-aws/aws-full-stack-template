@@ -1,0 +1,30 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+  pre_build:
+    commands:
+      - echo starting pre-build...
+      - aws sts get-caller-identity
+      - cd src
+      - chmod +x update-config.sh
+      - ./update-config.sh
+      - echo updated config.ts file...
+      - cat config.ts
+      - cd ..
+      - npm install
+  build:
+    commands:
+      - npm run build
+  post_build:
+    commands:
+      - aws s3 cp --recursive ./build s3://${WEBSITE_BUCKET}/
+      - aws s3 cp ./build/service-worker.js s3://${WEBSITE_BUCKET}/
+      - aws s3 cp ./build/index.html s3://${WEBSITE_BUCKET}/
+      #- aws cloudfront create-invalidation --distribution-id E1FPCW18GE87OH --paths /index.html /service-worker.js
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: build    
